@@ -1,0 +1,11 @@
+# Standard Data Processing
+pandas
+numpy
+
+# Machine Learning
+xgboost
+scikit-learn
+joblib
+
+# Explainable AI Output
+shap

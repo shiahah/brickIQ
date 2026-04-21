@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+npm-debug.log
+
+# Environment Variables (CRITICAL: Do not leak API keys)
+.env
+.env.*
+.env.local
+
+# Python / Machine Learning
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ML Model Artifacts
+**/artifacts/*.pkl
+**/artifacts/*.csv
+
+# React / Frontend Builds
+dist/
+build/
+
+# OS specific
+.DS_Store
+Thumbs.db
