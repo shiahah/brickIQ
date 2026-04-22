@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import axios from 'axios';
 
 function LocationMarker({ position, setPosition }) {
   useMapEvents({
@@ -13,27 +14,60 @@ function LocationMarker({ position, setPosition }) {
   );
 }
 
-export default function MapPlaceholder({ onLocationSelect }) {
+function ChangeView({ center }) {
+  const map = useMap();
+  map.setView(center);
+  return null;
+}
+
+export default function MapPlaceholder({ lat, lng, onLocationSelect }) {
   const [position, setPosition] = useState(() => {
     try {
       const saved = localStorage.getItem('brickiq_map_pin');
-      return saved ? JSON.parse(saved) : { lat: 19.0760, lng: 72.8777 }; // Default Mumbai
+      return saved ? JSON.parse(saved) : { lat: lat || 19.0760, lng: lng || 72.8777 }; // Default Mumbai
     } catch {
        return { lat: 19.0760, lng: 72.8777 };
     }
   });
 
   useEffect(() => {
+    if (lat && lng && (Math.abs(position.lat - lat) > 0.0001 || Math.abs(position.lng - lng) > 0.0001)) {
+        setPosition({ lat, lng });
+    }
+  }, [lat, lng]);
+
+  useEffect(() => {
+    let isMounted = true;
     if (position) {
       localStorage.setItem('brickiq_map_pin', JSON.stringify(position));
-      if (onLocationSelect) onLocationSelect(position.lat, position.lng);
+      
+      const fetchLocality = async () => {
+         try {
+            const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}`);
+            if (res.data && res.data.address) {
+               const a = res.data.address;
+               const extractedLocality = a.suburb || a.city_district || a.neighbourhood || a.town || a.municipality || a.city || 'Mumbai';
+               const physicalAddress = res.data.display_name || '';
+               if (onLocationSelect && isMounted) onLocationSelect(position.lat, position.lng, extractedLocality, physicalAddress);
+            } else {
+               if (onLocationSelect && isMounted) onLocationSelect(position.lat, position.lng, null, null);
+            }
+         } catch (e) {
+            console.error('Nominatim Geocoding Failed:', e);
+            if (onLocationSelect && isMounted) onLocationSelect(position.lat, position.lng, null);
+         }
+      };
+      
+      fetchLocality();
     }
-  }, [position, onLocationSelect]);
+    return () => { isMounted = false; };
+  }, [position]);
 
   return (
     <div className="glass-card animate-slide-up" style={{ height: '350px', width: '100%', overflow: 'hidden', borderRadius: '12px', padding: 0 }}>
       {typeof window !== 'undefined' && (
         <MapContainer center={[position.lat, position.lng]} zoom={12} scrollWheelZoom={true} style={{ height: '100%', width: '100%', zIndex: 0 }}>
+          <ChangeView center={[position.lat, position.lng]} />
           <TileLayer
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

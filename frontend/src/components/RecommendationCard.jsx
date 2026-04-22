@@ -11,7 +11,8 @@ export default function RecommendationCard({ rec }) {
     total_revenue_cr,
     net_profit_cr,
     expected_roi_percentage,
-    shap_explanation
+    shap_explanation,
+    ai_logic
   } = rec;
 
   const roi = parseFloat(expected_roi_percentage) || 0;
@@ -65,6 +66,36 @@ export default function RecommendationCard({ rec }) {
           <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
              <CheckCircle size={16} color="#10b981" style={{ marginTop: '3px', flexShrink: 0 }} />
              <span style={{ color: '#e2e8f0', lineHeight: 1.5, fontSize: '0.95rem' }}>{shap_explanation}</span>
+          </div>
+        </div>
+      )}
+
+      {ai_logic && typeof ai_logic === 'object' && (
+        <div style={{ background: 'rgba(16,185,129,0.1)', padding: '1.5rem', borderRadius: '12px', marginTop: '1rem', borderTop: '3px solid #10b981' }}>
+          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 1rem 0', color: '#34d399', fontSize: '1rem' }}>
+            <Lightbulb size={20} /> Deep Market Strategy
+          </h4>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+             <div>
+                <h5 style={{ margin: '0 0 0.5rem 0', color: '#10b981' }}>Pros</h5>
+                <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#f8fafc', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                   {ai_logic.pros?.map((p, i) => <li key={i}>{p}</li>) || <li>Strong generic metrics.</li>}
+                </ul>
+             </div>
+             <div>
+                <h5 style={{ margin: '0 0 0.5rem 0', color: '#f43f5e' }}>Cons / Risks</h5>
+                <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#f8fafc', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                   {ai_logic.cons?.map((p, i) => <li key={i}>{p}</li>) || <li>High initial capital.</li>}
+                </ul>
+             </div>
+          </div>
+          
+          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+             <h5 style={{ margin: '0 0 0.5rem 0', color: '#60a5fa' }}>Notable Details & Prerequisites</h5>
+             <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#e2e8f0', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                {ai_logic.notable_details?.map((p, i) => <li key={i}>{p}</li>) || <li>Review local land zoning.</li>}
+             </ul>
           </div>
         </div>
       )}

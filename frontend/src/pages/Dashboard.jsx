@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
+import axios from 'axios';
 import RecommendationCard from '../components/RecommendationCard.jsx';
 import Charts from '../components/Charts.jsx';
 import MapPlaceholder from '../components/MapPlaceholder.jsx';
@@ -11,6 +12,7 @@ export default function Dashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('predict');
   const [locationDetails, setLocationDetails] = useState({
     locality: 'Andheri West', 
+    address: 'Andheri West, Mumbai',
     idea: 'A luxury mixed-use development',
     plot_size: 10000, 
     budget: 50,
@@ -22,7 +24,26 @@ export default function Dashboard({ onLogout }) {
   const [error, setError] = useState('');
   const [showEthics, setShowEthics] = useState(false);
 
-  const handleLocationSelect = (lat, lng) => setLocationDetails(prev => ({...prev, lat, lng }));
+  const handleLocationSelect = (lat, lng, locName = null, fullAddress = null) => {
+      setLocationDetails(prev => ({
+          ...prev, 
+          lat, 
+          lng, 
+          ...(locName && { locality: locName }),
+          ...(fullAddress && { address: fullAddress })
+      }));
+  };
+
+  const searchAddress = async (e) => {
+    e.preventDefault();
+    if (!locationDetails.address) return;
+    try {
+      const res = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationDetails.address)}`);
+      if (res.data && res.data.length > 0) {
+        setLocationDetails(prev => ({ ...prev, lat: parseFloat(res.data[0].lat), lng: parseFloat(res.data[0].lon) }));
+      }
+    } catch(err) { console.error('Geocoding search failed', err); }
+  };
 
   const handlePredict = async (e) => {
     e.preventDefault();
@@ -73,6 +94,14 @@ export default function Dashboard({ onLogout }) {
                    <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.3rem' }}>Locality (Pricing Matrix Index)</label>
                    <input className="glass-input" style={{ width: '100%' }} placeholder="e.g. Andheri West" value={locationDetails.locality} onChange={e => setLocationDetails({...locationDetails, locality: e.target.value})} required />
                 </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+                   <div style={{ flex: 1 }}>
+                     <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.3rem' }}>Specific Pin Address</label>
+                     <input className="glass-input" style={{ width: '100%' }} placeholder="Type physical address..." value={locationDetails.address} onChange={e => setLocationDetails({...locationDetails, address: e.target.value})} />
+                   </div>
+                   <button type="button" onClick={searchAddress} className="glass-input" style={{ background: 'rgba(59,130,246,0.2)', padding: '0.7rem', color: '#fff' }}>Locate</button>
+                </div>
                 
                 <div>
                    <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.3rem' }}>Plot Size (Sq.Ft)</label>
@@ -86,7 +115,7 @@ export default function Dashboard({ onLogout }) {
                 
                 <div>
                    <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.3rem' }}>Target Vision / Project Idea</label>
-                   <textarea className="glass-input" style={{ width: '100%', resize: 'vertical' }} placeholder="Describe your property idea..." rows={3} value={locationDetails.idea} onChange={e => setLocationDetails({...locationDetails, idea: e.target.value})} />
+                   <textarea className="glass-input" style={{ width: '100%', resize: 'vertical' }} placeholder="e.g. A luxury mixed-use development (Also explicitly include any custom POIs you want to scan for, like 'boutique', 'mall', 'flower store'...)" rows={4} value={locationDetails.idea} onChange={e => setLocationDetails({...locationDetails, idea: e.target.value})} />
                 </div>
 
                 {error && <div style={{ color: '#fca5a5', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', background: 'rgba(239,68,68,0.1)' }}>{error}</div>}
@@ -99,7 +128,7 @@ export default function Dashboard({ onLogout }) {
 
             {/* Main Interactive Map & Results Array */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-               <MapPlaceholder onLocationSelect={handleLocationSelect} />
+               <MapPlaceholder lat={locationDetails.lat} lng={locationDetails.lng} onLocationSelect={handleLocationSelect} />
 
                {prediction && (
                  <>
@@ -114,12 +143,43 @@ export default function Dashboard({ onLogout }) {
                         {prediction.ai_verdict?.reason || 'Awaiting reason output.'}
                      </p>
                      
-                     <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
-                        <div><strong style={{ color: '#94a3b8' }}>Gyms:</strong> <span style={{fontSize: '1.1rem'}}>{prediction.infrastructure?.gym || 0}</span></div>
-                        <div><strong style={{ color: '#94a3b8' }}>Schools:</strong> <span style={{fontSize: '1.1rem'}}>{prediction.infrastructure?.school || 0}</span></div>
-                        <div><strong style={{ color: '#94a3b8' }}>Hospitals:</strong> <span style={{fontSize: '1.1rem'}}>{prediction.infrastructure?.hospital || 0}</span></div>
-                        <div><strong style={{ color: '#94a3b8' }}>Retail Stores:</strong> <span style={{fontSize: '1.1rem'}}>{prediction.infrastructure?.store || 0}</span></div>
-                     </div>
+                     {prediction.scan_history && prediction.scan_history.length > 0 ? (
+                       <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          {prediction.scan_history.map((scan, idx) => {
+                             const maxedCount = Object.entries(scan).filter(([k,v]) => k !== 'radius' && v >= 20).length;
+                             const emptyCount = Object.entries(scan).filter(([k,v]) => k !== 'radius' && v <= 2).length;
+                             const isFinal = idx === prediction.scan_history.length - 1;
+                             return (
+                               <div key={idx} style={{ background: isFinal ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)', padding: '1.5rem', borderRadius: '8px', border: isFinal ? '1px solid #10b981' : '1px dashed #3b82f6' }}>
+                                 <h4 style={{ margin: '0 0 0.5rem 0', color: isFinal ? '#34d399' : '#60a5fa' }}>
+                                    Step {idx + 1}: {scan.radius}m Radius Search
+                                 </h4>
+                                 <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                                   Identified {maxedCount} saturated categories and {emptyCount} barren constraints.
+                                   {!isFinal ? <em style={{color: '#f43f5e', marginLeft: '5px'}}>Adapting search matrix downstream...</em> : <em style={{color: '#10b981', marginLeft: '5px'}}>Density locked for AI generation!</em>}
+                                 </p>
+                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem' }}>
+                                    {Object.entries(scan).filter(([k,v]) => k !== 'radius').map(([k,v]) => (
+                                        <div key={k}>
+                                           <strong style={{ color: '#94a3b8', textTransform: 'capitalize' }}>{k.replace(/_/g, ' ')}:</strong> 
+                                           <span style={{fontSize: '1.1rem', marginLeft: '0.4rem', color: v >= 20 ? '#ef4444' : '#f8fafc' }}>{v}{v >= 20 ? '+' : ''}</span>
+                                        </div>
+                                    ))}
+                                 </div>
+                               </div>
+                             );
+                          })}
+                       </div>
+                     ) : (
+                       <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
+                          {Object.entries(prediction.infrastructure || {}).filter(([k,v]) => k !== 'gap_analysis').map(([k,v]) => (
+                               <div key={k}>
+                                  <strong style={{ color: '#94a3b8', textTransform: 'capitalize' }}>{k.replace(/_/g, ' ')}:</strong> 
+                                  <span style={{fontSize: '1.1rem', marginLeft: '0.4rem', color: v >= 20 ? '#ef4444' : '#f8fafc' }}>{v}{v >= 20 ? '+' : ''}</span>
+                               </div>
+                          ))}
+                       </div>
+                     )}
                    </div>
 
                    <h3 style={{ margin: 0, color: '#e2e8f0', paddingTop: '1rem' }}>Top Build Recommendations</h3>
