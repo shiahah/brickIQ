@@ -226,22 +226,31 @@ Return STRICTLY a JSON object with exactly 3 keys:
            recommendations: finalRecommendations
         };
 
-        // Save DB Record
+        // Save DB Record — full capture
         try {
           const report = new IntelligenceReport({
              user: req.user ? req.user._id : null,
-             coords: [lat, lng],
-             infrastructure: poi_counts,
-             llm_reasoning: llmResult.reasoning,
-             market_scores: {
-                expected_roi: mlRecommendations[0].expected_roi_percentage,
-                market_volatility: 0,
-                price_per_sqft: mlRecommendations[0].predicted_price_sqft
+             user_inputs: {
+               idea:      idea || null,
+               locality:  locality || null,
+               address:   req.body.address || null,
+               plot_size: parseFloat(plot_size) || null,
+               budget_cr: parseFloat(req.body.budget) || null,
+               lat:       parseFloat(lat),
+               lng:       parseFloat(lng),
              },
-             ai_recommendations: mlRecommendations.map(r => ({
-                property_type: r.type, 
-                roi: r.expected_roi_percentage, 
-                reasoning: r.shap_explanation
+             scan_history: scanHistory,
+             poi_counts:   poi_counts,
+             ai_verdict:   llmResult.verdict,
+             ai_reasoning: llmResult.reasoning,
+             recommendations: finalRecommendations.map(r => ({
+               type:                    r.type,
+               projected_fsi:           r.projected_fsi,
+               predicted_price_sqft:    r.predicted_price_sqft,
+               total_revenue_cr:        r.total_revenue_cr,
+               net_profit_cr:           r.net_profit_cr,
+               expected_roi_percentage: r.expected_roi_percentage,
+               shap_explanation:        r.shap_explanation,
              }))
           });
           await report.save();
