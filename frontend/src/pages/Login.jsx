@@ -20,10 +20,16 @@ export default function Login({ setToken }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, background: '-webkit-linear-gradient(135deg, #60a5fa, #3b82f6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>
+          BrickIQ
+        </h1>
+        <p style={{ margin: '0.3rem 0 0', fontSize: '0.85rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Builder Intelligence Platform</p>
+      </div>
       <div className="glass-card animate-slide-up" style={{ padding: '2.5rem', width: '100%', maxWidth: '400px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          {isRegister ? 'Join BrickIQ' : 'Welcome Back'}
+          {isRegister ? 'Create Account' : 'Welcome Back'}
         </h2>
         {error && <div style={{ color: '#ef4444', marginBottom: '1rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '4px' }}>{error}</div>}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

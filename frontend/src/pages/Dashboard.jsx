@@ -122,7 +122,14 @@ export default function Dashboard({ onLogout }) {
 
             {/* Main Interactive Map & Results Array */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+               <div style={{ marginBottom: '0.6rem' }}>
+                 <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                   📍 Site Intelligence Map
+                 </h3>
+                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#64748b' }}>Drop a pin or search an address to set your build location</p>
+               </div>
                <MapPlaceholder lat={locationDetails.lat} lng={locationDetails.lng} onLocationSelect={handleLocationSelect} />
+
 
                {prediction && (
                  <>
