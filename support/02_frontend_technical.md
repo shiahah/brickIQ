@@ -55,20 +55,17 @@ Defines CSS custom properties and utility classes:
 
 ### `src/pages/Dashboard.jsx` — Main Application Page
 
-The largest and most important file. Manages all user state and orchestrates the full prediction flow.
+The main application page. Manages user state and orchestrates the prediction flow.
 
 #### State Variables
 ```jsx
-const [activeTab, setActiveTab] = useState('predict');
-// Which tab is visible: 'predict' | 'market' | 'buyers'
-
 const [locationDetails, setLocationDetails] = useState({
   locality: 'Andheri West',        // ML pricing index lookup key
   address: 'Andheri West, Mumbai', // Physical address for forward geocoding
   idea: '...',                     // User's free-text vision
   plot_size: 10000,                // Square feet
   budget: 50,                      // Crore ₹ (optional)
-  lat: 19.1136,                    // From map pin or Nominatim search
+  lat: 19.1136,
   lng: 72.8697
 });
 
@@ -173,8 +170,6 @@ Every time `position` changes (pin dropped), fires a Nominatim call to convert c
 
 | Component | Purpose |
 |---|---|
-| `Charts.jsx` | Market Indices tab — trend charts for Mumbai market data |
-| `BuyerMatching.jsx` | Buyer Funnel tab — demographic buyer matching UI |
 | `EthicsModal.jsx` | AI Ethics popup — discloses how the AI makes decisions |
 
 ---

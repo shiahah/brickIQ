@@ -128,20 +128,17 @@ brickiq/
 ├── frontend/
 │   └── src/
 │       ├── pages/
-│       │   ├── Dashboard.jsx      ← Main app page
-│       │   ├── Login.jsx          ← Login form
-│       │   └── Register.jsx       ← Registration form
+│       │   ├── Dashboard.jsx      ← Main app page (single view)
+│       │   └── Login.jsx          ← Login / Register form
 │       ├── components/
 │       │   ├── MapPlaceholder.jsx     ← Leaflet map + geocoding
 │       │   ├── RecommendationCard.jsx ← Build recommendation UI card
-│       │   ├── Charts.jsx             ← Market Indices tab
-│       │   ├── BuyerMatching.jsx      ← Buyer Funnel tab
 │       │   └── EthicsModal.jsx        ← AI Ethics disclosure popup
 │       ├── api.js                 ← Axios base config with JWT interceptor
-│       ├── App.jsx                ← Top-level auth gate / router
+│       ├── App.jsx                ← Top-level auth gate
 │       └── index.css              ← Global glassmorphism design system
 ├── dataset/
 │   └── mumbai_house_data.csv      ← Training dataset
-├── support/                       ← Documentation (you are here)
+├── support/                       ← Documentation
 └── requirements.txt               ← Python dependencies
 ```

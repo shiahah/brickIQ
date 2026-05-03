@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import api from '../api';
 import axios from 'axios';
 import RecommendationCard from '../components/RecommendationCard.jsx';
-import Charts from '../components/Charts.jsx';
 import MapPlaceholder from '../components/MapPlaceholder.jsx';
-import BuyerMatching from '../components/BuyerMatching.jsx';
 import EthicsModal from '../components/EthicsModal.jsx';
 import { Shield } from 'lucide-react';
 
 export default function Dashboard({ onLogout }) {
-  const [activeTab, setActiveTab] = useState('predict');
   const [locationDetails, setLocationDetails] = useState({
     locality: 'Andheri West', 
     address: 'Andheri West, Mumbai',
@@ -74,15 +71,12 @@ export default function Dashboard({ onLogout }) {
           BrickIQ Builder Intelligence
         </h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="glass-input" onClick={() => setActiveTab('predict')} style={{ background: activeTab === 'predict' ? 'rgba(59,130,246,0.2)' : '' }}>Demand-Gap Strategy</button>
-          <button className="glass-input" onClick={() => setActiveTab('market')} style={{ background: activeTab === 'market' ? 'rgba(59,130,246,0.2)' : '' }}>Market Indices</button>
-          <button className="glass-input" onClick={() => setActiveTab('buyers')} style={{ background: activeTab === 'buyers' ? 'rgba(59,130,246,0.2)' : '' }}>Buyer Funnel</button>
           <button onClick={onLogout} className="glass-input" style={{ borderColor: 'rgba(239,68,68,0.5)', color: '#fca5a5' }}>Logout</button>
         </div>
       </header>
 
       <main style={{ display: 'block', marginTop: '2rem' }}>
-        {activeTab === 'predict' && (
+        <>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem', alignItems: 'start' }}>
             
             {/* Sidebar Configuration */}
@@ -190,9 +184,7 @@ export default function Dashboard({ onLogout }) {
                )}
             </div>
           </div>
-        )}
-        {activeTab === 'market' && <Charts />}
-        {activeTab === 'buyers' && <BuyerMatching />}
+        </>
       </main>
 
       <footer style={{ marginTop: '2rem', textAlign: 'center' }}>

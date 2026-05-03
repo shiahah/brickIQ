@@ -45,8 +45,8 @@ We need to install the server controls and the Python XGBoost Mathematical engin
 
    **For Windows:**
    ```shell
-   python -m venv venv
-   .\venv\Scripts\activate
+   
+   
    pip install -r ..\requirements.txt
    ```
    
